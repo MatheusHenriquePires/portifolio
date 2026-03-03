@@ -1,0 +1,6 @@
+# Portfolio deploy
+projects/bancario/backend/.git/
+projects/bancario/backend/target/
+projects/bancario/.mvn-bin/
+.DS_Store
+*.log

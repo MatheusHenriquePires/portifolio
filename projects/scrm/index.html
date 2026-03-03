@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>S-CRM</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --accent: #00f5ff;
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #8b949e
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+            user-select: none
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: .75rem 1.25rem;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--accent);
+            letter-spacing: -.02em
+        }
+
+        .nav-items {
+            display: flex;
+            gap: .5rem;
+            margin-left: auto
+        }
+
+        .nav-item {
+            font-size: .72rem;
+            padding: .3rem .7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: .2s
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--text);
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .72rem;
+            padding: .3rem .75rem;
+            background: rgba(0, 245, 255, .08);
+            border: 1px solid rgba(0, 245, 255, .2);
+            border-radius: 99px;
+            color: var(--accent);
+            margin-left: .5rem
+        }
+
+        .dot-live {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #27c93f;
+            animation: pulse 1.5s infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* Main */
+        .main {
+            display: grid;
+            grid-template-columns: 220px 1fr 200px;
+            gap: 0;
+            height: 100%
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 1rem;
+            overflow: hidden
+        }
+
+        .sidebar-title {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--muted);
+            margin-bottom: .75rem;
+            font-weight: 700
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .55rem .6rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: .2s;
+            margin-bottom: .2rem
+        }
+
+        .contact-item:hover {
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .contact-item.active {
+            background: rgba(0, 245, 255, .08);
+            border: 1px solid rgba(0, 245, 255, .15)
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .7rem;
+            font-weight: 700;
+            flex-shrink: 0
+        }
+
+        .contact-info {
+            overflow: hidden
+        }
+
+        .contact-name {
+            font-size: .75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .contact-status {
+            font-size: .65rem;
+            color: var(--muted)
+        }
+
+        /* Content */
+        .content {
+            padding: 1.25rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem
+        }
+
+        .pipeline-label {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--muted);
+            font-weight: 700
+        }
+
+        .pipeline {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .6rem
+        }
+
+        .pipe-col {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .75rem;
+            min-height: 140px
+        }
+
+        .pipe-head {
+            font-size: .68rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: .6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .pipe-count {
+            background: rgba(255, 255, 255, .07);
+            border-radius: 99px;
+            padding: .1rem .4rem;
+            font-size: .6rem
+        }
+
+        .pipe-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: .6rem;
+            margin-bottom: .4rem;
+            font-size: .7rem;
+            cursor: pointer;
+            transition: .15s
+        }
+
+        .pipe-card:hover {
+            border-color: var(--accent);
+            transform: translateX(2px)
+        }
+
+        .pipe-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            margin-bottom: .3rem
+        }
+
+        /* Stats row */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .6rem
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .75rem
+        }
+
+        .stat-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent)
+        }
+
+        .stat-lbl {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: .2rem
+        }
+
+        /* Right panel */
+        .right-panel {
+            background: var(--card);
+            border-left: 1px solid var(--border);
+            padding: 1rem;
+            overflow: hidden
+        }
+
+        .tag {
+            display: inline-flex;
+            font-size: .63rem;
+            padding: .15rem .5rem;
+            border-radius: 4px;
+            margin: .15rem;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .tag.ts {
+            background: rgba(49, 120, 198, .2);
+            color: #3178c6;
+            border: 1px solid rgba(49, 120, 198, .3)
+        }
+
+        .tag.vue {
+            background: rgba(66, 184, 131, .2);
+            color: #42b883;
+            border: 1px solid rgba(66, 184, 131, .3)
+        }
+
+        .tag.dock {
+            background: rgba(13, 183, 237, .2);
+            color: #0db7ed;
+            border: 1px solid rgba(13, 183, 237, .3)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <div class="logo">S-CRM</div>
+        <div class="nav-items">
+            <div class="nav-item active">Dashboard</div>
+            <div class="nav-item">Clientes</div>
+            <div class="nav-item">Pipeline</div>
+            <div class="nav-item">Relatórios</div>
+        </div>
+        <div class="user-chip">
+            <div class="dot-live"></div>Matheus
+        </div>
+    </div>
+    <div class="main">
+        <div class="sidebar">
+            <div class="sidebar-title">Leads Recentes</div>
+            <div class="contact-item active">
+                <div class="avatar" style="background:rgba(0,245,255,.15);color:#00f5ff">MH</div>
+                <div class="contact-info">
+                    <div class="contact-name">Maria Helena</div>
+                    <div class="contact-status">Proposta enviada</div>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="avatar" style="background:rgba(124,58,237,.15);color:#7c3aed">JP</div>
+                <div class="contact-info">
+                    <div class="contact-name">João Pedro</div>
+                    <div class="contact-status">Negociação</div>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="avatar" style="background:rgba(39,201,63,.15);color:#27c93f">CS</div>
+                <div class="contact-info">
+                    <div class="contact-name">Carla Silva</div>
+                    <div class="contact-status">Fechado ✓</div>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="avatar" style="background:rgba(251,188,4,.15);color:#fbc404">RA</div>
+                <div class="contact-info">
+                    <div class="contact-name">Roberto Alves</div>
+                    <div class="contact-status">Qualificação</div>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="avatar" style="background:rgba(255,95,86,.15);color:#ff5f56">FC</div>
+                <div class="contact-info">
+                    <div class="contact-name">Fernanda Costa</div>
+                    <div class="contact-status">Lead frio</div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-val">47</div>
+                    <div class="stat-lbl">Leads ativos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">R$128k</div>
+                    <div class="stat-lbl">Pipeline total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">83%</div>
+                    <div class="stat-lbl">Taxa conversão</div>
+                </div>
+            </div>
+            <div class="pipeline-label">Pipeline de Vendas</div>
+            <div class="pipeline">
+                <div class="pipe-col">
+                    <div class="pipe-head">Qualificação <span class="pipe-count">8</span></div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#fbc404"></div>Empresa ABC
+                    </div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#fbc404"></div>Tech Solutions
+                    </div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#fbc404"></div>Grupo XYZ
+                    </div>
+                </div>
+                <div class="pipe-col">
+                    <div class="pipe-head">Proposta <span class="pipe-count">5</span></div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#00f5ff"></div>Maria Helena
+                    </div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#00f5ff"></div>Startup Delta
+                    </div>
+                </div>
+                <div class="pipe-col">
+                    <div class="pipe-head">Negociação <span class="pipe-count">3</span></div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#7c3aed"></div>João Pedro
+                    </div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#7c3aed"></div>Corp Alfa
+                    </div>
+                </div>
+                <div class="pipe-col">
+                    <div class="pipe-head">Fechado <span class="pipe-count">12</span></div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#27c93f"></div>Carla Silva ✓
+                    </div>
+                    <div class="pipe-card">
+                        <div class="pipe-dot" style="background:#27c93f"></div>Beta Ltda ✓
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="sidebar-title">Stack</div>
+            <div style="margin-top:.5rem">
+                <span class="tag ts">TypeScript</span>
+                <span class="tag vue">Vue.js</span>
+                <span class="tag dock">Docker</span>
+                <span class="tag ts">Vite</span>
+                <span class="tag vue">REST API</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
