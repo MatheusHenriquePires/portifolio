@@ -4,3 +4,6 @@ projects/bancario/backend/target/
 projects/bancario/.mvn-bin/
 .DS_Store
 *.log
+
+# Maven build output
+projects/caixa-mercado-java/target/
