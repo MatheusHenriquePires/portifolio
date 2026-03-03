@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Caixa de Mercado Java</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --accent: #00f5ff;
+            --ok: #27c93f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 15% 0%, rgba(0, 245, 255, .15), transparent 42%), var(--bg);
+            color: var(--text);
+            padding: 1rem;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            gap: .8rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: .95rem;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin-bottom: .3rem;
+        }
+
+        p,
+        li {
+            color: var(--muted);
+            font-size: .88rem;
+            line-height: 1.5;
+        }
+
+        ul {
+            margin-left: 1.1rem;
+            margin-top: .45rem;
+        }
+
+        code,
+        pre {
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        pre {
+            margin-top: .55rem;
+            background: rgba(0, 0, 0, .35);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .75rem;
+            overflow: auto;
+            font-size: .78rem;
+            color: var(--text);
+        }
+
+        .pill {
+            display: inline-flex;
+            padding: .18rem .52rem;
+            border-radius: 99px;
+            border: 1px solid rgba(0, 245, 255, .32);
+            color: var(--accent);
+            background: rgba(0, 245, 255, .1);
+            font-size: .68rem;
+            margin-right: .35rem;
+        }
+
+        .ok {
+            color: var(--ok);
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <section class="card">
+            <h1>Caixa de Mercado em Java</h1>
+            <p>Projeto em Java (terminal) com regras de caixa, estoque e vendas.</p>
+            <div style="margin-top:.5rem;">
+                <span class="pill">Java 21</span>
+                <span class="pill">Maven</span>
+                <span class="pill">POO</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h1 style="font-size:1rem;">Funcionalidades</h1>
+            <ul>
+                <li>Cadastro de produto com SKU, preco e estoque</li>
+                <li>Reposicao de estoque</li>
+                <li>Abertura de venda e adicao de itens</li>
+                <li>Finalizacao com desconto e forma de pagamento</li>
+                <li>Calculo de troco em pagamentos em dinheiro</li>
+                <li>Historico de vendas</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h1 style="font-size:1rem;">Como executar</h1>
+            <pre>cd projects/caixa-mercado-java
+mvn exec:java</pre>
+            <p class="ok" style="margin-top:.4rem;">Codigo fonte: <code>src/main/java/com/matheus/caixa</code></p>
+        </section>
+
+        <section class="card">
+            <h1 style="font-size:1rem;">Fluxo no terminal (exemplo)</h1>
+            <pre>===== CAIXA DE MERCADO =====
+1. Listar estoque
+2. Cadastrar novo produto
+3. Repor estoque
+4. Adicionar item a venda atual
+5. Ver venda atual
+6. Finalizar venda
+...
+
+--- CUPOM ---
+Venda: A1B2C3D4
+Arroz 5kg x1 - R$ 29,90
+Cafe 500g x2 - R$ 33,80
+Desconto: R$ 3,00
+Total: R$ 60,70
+Pagamento: dinheiro
+Troco: R$ 9,30</pre>
+        </section>
+    </main>
+</body>
+
+</html>
