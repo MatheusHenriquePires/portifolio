@@ -982,12 +982,16 @@
     </div>
 
     <script>
-        // ─── API URL (dinâmica) ──────────────────────────────
-        // Prioridade: ?api= na URL > localStorage > localhost
+        // ─── API URL + Demo mode ─────────────────────────────
         const params = new URLSearchParams(window.location.search);
-        const savedUrl = params.get('api') || localStorage.getItem('bancario_api') || 'http://localhost:8080';
-        if (params.get('api')) localStorage.setItem('bancario_api', params.get('api'));
-        const API = savedUrl.replace(/\/$/, '') + '/api';
+        const DEMO_MODE = params.get('mode') === 'demo';
+        const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        const defaultApiBase = isLocalHost ? 'http://localhost:8080' : '';
+        const apiFromQuery = params.get('api');
+        const savedApiBase = apiFromQuery || localStorage.getItem('bancario_api') || defaultApiBase;
+        if (apiFromQuery) localStorage.setItem('bancario_api', apiFromQuery);
+        const API = savedApiBase ? savedApiBase.replace(/\/$/, '') + '/api' : '';
+        const DEMO_STORAGE_KEY = 'bancario_demo_state_v1';
 
         let accounts = [];
         let currentId = null;
@@ -1010,6 +1014,161 @@
             t.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✕ ' : 'ℹ ') + msg;
             t.className = 'show ' + type;
             setTimeout(() => t.className = '', 3000);
+        }
+
+        function clone(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        function createTx(type, amount, description, balanceAfter) {
+            return {
+                type,
+                amount: Number(amount),
+                description,
+                balanceAfter: Number(balanceAfter),
+                date: new Date().toISOString()
+            };
+        }
+
+        function buildDemoSeed() {
+            const accountA = {
+                id: 'ACC-1001',
+                ownerName: 'Ana Costa',
+                type: 'CORRENTE',
+                balance: 2650.55,
+                transactions: []
+            };
+            accountA.transactions.push(
+                createTx('DEPOSITO', 3000, 'Depósito inicial', 3000),
+                createTx('SAQUE', 349.45, 'Pagamento de boleto', 2650.55)
+            );
+
+            const accountB = {
+                id: 'ACC-1002',
+                ownerName: 'Bruno Lima',
+                type: 'POUPANCA',
+                balance: 1200,
+                transactions: [createTx('DEPOSITO', 1200, 'Depósito inicial', 1200)]
+            };
+
+            return { counter: 1003, accounts: [accountA, accountB] };
+        }
+
+        function loadDemoState() {
+            try {
+                const raw = localStorage.getItem(DEMO_STORAGE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (_) { }
+            const seed = buildDemoSeed();
+            localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(seed));
+            return seed;
+        }
+
+        function saveDemoState(state) {
+            localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function findDemoAccount(state, id) {
+            return state.accounts.find(a => a.id === id);
+        }
+
+        async function demoApi(path, method, body = null) {
+            const state = loadDemoState();
+            const parts = path.split('/').filter(Boolean);
+            const byId = parts[0] === 'accounts' && parts[1];
+            const action = parts[2];
+
+            if (method === 'GET' && path === '/accounts') return clone(state.accounts);
+
+            if (method === 'GET' && byId && !action) {
+                const account = findDemoAccount(state, parts[1]);
+                if (!account) throw new Error('Conta não encontrada');
+                return clone(account);
+            }
+
+            if (method === 'POST' && path === '/accounts') {
+                const ownerName = (body?.ownerName || '').trim();
+                const type = body?.type === 'POUPANCA' ? 'POUPANCA' : 'CORRENTE';
+                if (!ownerName) throw new Error('Nome do titular é obrigatório');
+                const account = {
+                    id: `ACC-${state.counter++}`,
+                    ownerName,
+                    type,
+                    balance: 0,
+                    transactions: []
+                };
+                state.accounts.push(account);
+                saveDemoState(state);
+                return clone(account);
+            }
+
+            if (method === 'POST' && byId && action === 'deposit') {
+                const acc = findDemoAccount(state, parts[1]);
+                const amount = Number(body?.amount);
+                if (!acc) throw new Error('Conta não encontrada');
+                if (!(amount > 0)) throw new Error('Valor inválido');
+                acc.balance = Number((acc.balance + amount).toFixed(2));
+                acc.transactions.push(createTx('DEPOSITO', amount, 'Depósito em conta', acc.balance));
+                saveDemoState(state);
+                return clone(acc);
+            }
+
+            if (method === 'POST' && byId && action === 'withdraw') {
+                const acc = findDemoAccount(state, parts[1]);
+                const amount = Number(body?.amount);
+                if (!acc) throw new Error('Conta não encontrada');
+                if (!(amount > 0)) throw new Error('Valor inválido');
+                if (amount > acc.balance) throw new Error('Saldo insuficiente');
+                acc.balance = Number((acc.balance - amount).toFixed(2));
+                acc.transactions.push(createTx('SAQUE', amount, 'Saque em conta', acc.balance));
+                saveDemoState(state);
+                return clone(acc);
+            }
+
+            if (method === 'POST' && path === '/transfer') {
+                const from = findDemoAccount(state, body?.fromId);
+                const to = findDemoAccount(state, body?.toId);
+                const amount = Number(body?.amount);
+                if (!from || !to) throw new Error('Conta não encontrada');
+                if (from.id === to.id) throw new Error('Conta de destino inválida');
+                if (!(amount > 0)) throw new Error('Valor inválido');
+                if (amount > from.balance) throw new Error('Saldo insuficiente');
+
+                from.balance = Number((from.balance - amount).toFixed(2));
+                to.balance = Number((to.balance + amount).toFixed(2));
+                from.transactions.push(createTx('TRANSFERENCIA_SAIDA', amount, `Transferência para ${to.ownerName}`, from.balance));
+                to.transactions.push(createTx('TRANSFERENCIA_ENTRADA', amount, `Transferência de ${from.ownerName}`, to.balance));
+                saveDemoState(state);
+                return { ok: true };
+            }
+
+            throw new Error('Rota não encontrada');
+        }
+
+        async function apiGet(path) {
+            if (DEMO_MODE) return demoApi(path, 'GET');
+            if (!API) throw new Error('API não configurada');
+
+            const r = await fetch(`${API}${path}`);
+            let data = null;
+            try { data = await r.json(); } catch (_) { }
+            if (!r.ok) throw new Error(data?.error || 'Erro ao consultar API');
+            return data;
+        }
+
+        async function apiPost(path, payload) {
+            if (DEMO_MODE) return demoApi(path, 'POST', payload);
+            if (!API) throw new Error('API não configurada');
+
+            const r = await fetch(`${API}${path}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            let data = null;
+            try { data = await r.json(); } catch (_) { }
+            if (!r.ok) throw new Error(data?.error || 'Erro na operação');
+            return data;
         }
 
         function openModal(id) {
@@ -1041,6 +1200,12 @@
             const dot = document.getElementById('status-dot');
             const txt = document.getElementById('status-text');
             const banner = document.getElementById('api-banner');
+            if (DEMO_MODE) {
+                dot.style.background = 'var(--accent)';
+                txt.textContent = 'Demo local';
+                banner.classList.remove('show');
+                return;
+            }
             if (online) { dot.style.background = 'var(--green)'; txt.textContent = 'API Online'; banner.classList.remove('show'); }
             else { dot.style.background = 'var(--red)'; txt.textContent = 'API Offline'; banner.classList.add('show'); }
         }
@@ -1048,14 +1213,12 @@
         // ─── Load Accounts ──────────────────────────────────
         async function loadAccounts() {
             try {
-                const r = await fetch(`${API}/accounts`);
-                if (!r.ok) throw new Error();
-                accounts = await r.json();
+                accounts = await apiGet('/accounts');
                 setStatus(true);
                 renderSidebar();
             } catch {
                 setStatus(false);
-                document.getElementById('accounts-list').innerHTML = '<div style="text-align:center;padding:1rem;font-size:.78rem;color:var(--muted)">Backend offline</div>';
+                document.getElementById('accounts-list').innerHTML = '<div style="text-align:center;padding:1rem;font-size:.78rem;color:var(--muted)">Backend offline. Use <code>?api=URL_DA_API</code> ou abra em modo demo.</div>';
             }
         }
 
@@ -1077,9 +1240,7 @@
         async function loadAccount(id) {
             currentId = id;
             try {
-                const r = await fetch(`${API}/accounts/${id}`);
-                if (!r.ok) throw new Error('Conta não encontrada');
-                currentAcc = await r.json();
+                currentAcc = await apiGet(`/accounts/${id}`);
                 // Update sidebar
                 accounts = accounts.map(a => a.id === id ? currentAcc : a);
                 renderSidebar();
@@ -1138,9 +1299,7 @@
             const btn = document.getElementById('btn-create');
             btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
             try {
-                const r = await fetch(`${API}/accounts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ownerName: name, type }) });
-                const data = await r.json();
-                if (!r.ok) throw new Error(data.error || 'Erro ao criar conta');
+                const data = await apiPost('/accounts', { ownerName: name, type });
                 accounts.push(data);
                 closeModal('modal-create');
                 document.getElementById('create-name').value = '';
@@ -1159,9 +1318,7 @@
             const btn = document.getElementById('btn-dep');
             btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
             try {
-                const r = await fetch(`${API}/accounts/${currentId}/deposit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: amt }) });
-                const data = await r.json();
-                if (!r.ok) throw new Error(data.error || 'Erro');
+                const data = await apiPost(`/accounts/${currentId}/deposit`, { amount: amt });
                 currentAcc = data; accounts = accounts.map(a => a.id === currentId ? data : a);
                 closeModal('modal-deposit');
                 document.getElementById('dep-amount').value = '';
@@ -1181,9 +1338,7 @@
             const btn = document.getElementById('btn-wd');
             btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
             try {
-                const r = await fetch(`${API}/accounts/${currentId}/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: amt }) });
-                const data = await r.json();
-                if (!r.ok) throw new Error(data.error || 'Erro');
+                const data = await apiPost(`/accounts/${currentId}/withdraw`, { amount: amt });
                 currentAcc = data; accounts = accounts.map(a => a.id === currentId ? data : a);
                 closeModal('modal-withdraw');
                 document.getElementById('wd-amount').value = '';
@@ -1204,9 +1359,7 @@
             const btn = document.getElementById('btn-tf');
             btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
             try {
-                const r = await fetch(`${API}/transfer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fromId: currentId, toId, amount: amt }) });
-                const data = await r.json();
-                if (!r.ok) throw new Error(data.error || 'Erro');
+                await apiPost('/transfer', { fromId: currentId, toId, amount: amt });
                 closeModal('modal-transfer');
                 document.getElementById('tf-amount').value = '';
                 await loadAccounts();
