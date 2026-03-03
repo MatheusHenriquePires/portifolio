@@ -1,34 +1,116 @@
-// Pega os elementos corretamente
-const loginform = document.getElementById('loginForm');
-const nomeInput = document.getElementById('nome');
+const loginForm = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');
-const urlInput = document.getElementById('url');
-const feedbackParagrafo = document.getElementById('feedback');
+const passwordInput = document.getElementById('password');
+const rememberInput = document.getElementById('remember');
+const togglePasswordBtn = document.getElementById('togglePassword');
+const submitBtn = document.getElementById('submitBtn');
+const feedback = document.getElementById('feedback');
 
-loginform.addEventListener('submit', (evento) => {
-    evento.preventDefault();
+const loginCard = document.getElementById('login-card');
+const sessionCard = document.getElementById('sessionCard');
+const sessionInfo = document.getElementById('sessionInfo');
+const logoutBtn = document.getElementById('logoutBtn');
 
-    const nome = nomeInput.value.trim();
-    const email = emailInput.value.trim();
-    const url = urlInput.value.trim();
+const SESSION_KEY = 'mychat_session';
+const REMEMBER_KEY = 'mychat_remember_email';
 
-    try {
-        // Salva no localStorage
-        localStorage.setItem('usuario_nome', nome);
-        localStorage.setItem('usuario_email', email);
-        localStorage.setItem('usuario_url', url);
+function setFeedback(message, type) {
+    feedback.textContent = message;
+    feedback.className = `feedback ${type}`;
+}
 
-        feedbackParagrafo.textContent = 'Dados salvos com sucesso!';
-        feedbackParagrafo.style.color = 'green';
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
-        console.log('Dados salvos no localStorage:', {
-            nome: localStorage.getItem('usuario_nome'),
-            email: localStorage.getItem('usuario_email'),
-            url: localStorage.getItem('usuario_url')
-        });
-    } catch (e) {
-        feedbackParagrafo.textContent = 'Não foi possível salvar os dados.';
-        feedbackParagrafo.style.color = 'red';
-        console.error('Erro ao salvar no localStorage:', e);
+function showSession(session) {
+    loginCard.classList.add('hidden');
+    sessionCard.classList.remove('hidden');
+    sessionInfo.textContent = `Usuário: ${session.email} | Login em: ${new Date(session.timestamp).toLocaleString('pt-BR')}`;
+}
+
+function showLogin() {
+    sessionCard.classList.add('hidden');
+    loginCard.classList.remove('hidden');
+}
+
+function loadRememberedEmail() {
+    const remembered = localStorage.getItem(REMEMBER_KEY);
+    if (remembered) {
+        emailInput.value = remembered;
+        rememberInput.checked = true;
     }
+}
+
+function loadSession() {
+    try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) return;
+        const session = JSON.parse(raw);
+        if (!session?.email || !session?.timestamp) return;
+        showSession(session);
+    } catch (_) {
+        localStorage.removeItem(SESSION_KEY);
+    }
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    setFeedback('', '');
+
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
+
+    if (!isValidEmail(email)) {
+        setFeedback('Digite um e-mail valido.', 'error');
+        return;
+    }
+
+    if (password.length < 6) {
+        setFeedback('A senha deve ter pelo menos 6 caracteres.', 'error');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Entrando...';
+
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    const session = {
+        email,
+        timestamp: Date.now()
+    };
+
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+    if (rememberInput.checked) {
+        localStorage.setItem(REMEMBER_KEY, email);
+    } else {
+        localStorage.removeItem(REMEMBER_KEY);
+    }
+
+    setFeedback('Login realizado com sucesso.', 'success');
+    showSession(session);
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Entrar';
+}
+
+function handleLogout() {
+    localStorage.removeItem(SESSION_KEY);
+    passwordInput.value = '';
+    showLogin();
+    setFeedback('Sessao encerrada.', 'success');
+}
+
+togglePasswordBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    togglePasswordBtn.textContent = isPassword ? '🙈' : '👁';
 });
+
+loginForm.addEventListener('submit', handleLogin);
+logoutBtn.addEventListener('click', handleLogout);
+
+loadRememberedEmail();
+loadSession();
