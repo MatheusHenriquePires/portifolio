@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scheduler Lab</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --panel: #161b22;
+            --panel-2: #1d2430;
+            --border: #30363d;
+            --accent: #00f5ff;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --ok: #27c93f;
+            --warn: #fbc404;
+            --danger: #ff5f56;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 10% 0%, rgba(0, 245, 255, 0.12), transparent 45%), var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .app {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            gap: 0.9rem;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 0.9rem;
+        }
+
+        .top {
+            display: grid;
+            gap: 0.8rem;
+            grid-template-columns: 1.35fr 1fr;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .controls {
+            display: grid;
+            gap: 0.65rem;
+            grid-template-columns: repeat(4, 1fr);
+            margin-top: 0.8rem;
+        }
+
+        .field {
+            display: grid;
+            gap: 0.3rem;
+        }
+
+        .field label {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        input,
+        select,
+        button {
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--panel-2);
+            color: var(--text);
+            padding: 0 0.6rem;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            background: rgba(0, 245, 255, 0.13);
+            border-color: rgba(0, 245, 255, 0.3);
+        }
+
+        button:hover {
+            opacity: 0.95;
+        }
+
+        .btn-danger {
+            background: rgba(255, 95, 86, 0.12);
+            border-color: rgba(255, 95, 86, 0.32);
+        }
+
+        .btn-ok {
+            background: rgba(39, 201, 63, 0.15);
+            border-color: rgba(39, 201, 63, 0.35);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.7rem;
+            flex-wrap: wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+        }
+
+        th,
+        td {
+            padding: 0.55rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .grid {
+            display: grid;
+            gap: 0.8rem;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+        }
+
+        .metric {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+
+        .metric p {
+            color: var(--muted);
+            font-size: 0.72rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric strong {
+            font-size: 1rem;
+        }
+
+        .gantt-wrap {
+            overflow-x: auto;
+            padding-bottom: 0.3rem;
+        }
+
+        .gantt {
+            display: flex;
+            min-width: max-content;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .block {
+            border-right: 1px solid var(--border);
+            min-width: 52px;
+            display: grid;
+            place-items: center;
+            padding: 0.4rem;
+            font-size: 0.75rem;
+            background: rgba(0, 245, 255, 0.09);
+        }
+
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.74rem;
+            color: var(--muted);
+            margin-top: 0.35rem;
+        }
+
+        .status {
+            margin-top: 0.7rem;
+            font-size: 0.85rem;
+            color: var(--warn);
+        }
+
+        @media (max-width: 850px) {
+            .top {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <section class="card top">
+            <div>
+                <h1>Scheduler Lab</h1>
+                <p class="hint">Simule FCFS, SJF e Round Robin e compare tempo de espera e turnaround.</p>
+                <div class="controls">
+                    <div class="field">
+                        <label for="pid">Processo</label>
+                        <input id="pid" value="P1" />
+                    </div>
+                    <div class="field">
+                        <label for="arrival">Chegada</label>
+                        <input id="arrival" type="number" min="0" value="0" />
+                    </div>
+                    <div class="field">
+                        <label for="burst">Burst</label>
+                        <input id="burst" type="number" min="1" value="4" />
+                    </div>
+                    <div class="field">
+                        <label for="priority">Prioridade</label>
+                        <input id="priority" type="number" min="1" value="3" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="addBtn">Adicionar processo</button>
+                    <button id="randomBtn">Gerar 6 aleatórios</button>
+                    <button id="clearBtn" class="btn-danger">Limpar</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="controls">
+                    <div class="field">
+                        <label for="algorithm">Algoritmo</label>
+                        <select id="algorithm">
+                            <option value="fcfs">FCFS</option>
+                            <option value="sjf">SJF (não-preemptivo)</option>
+                            <option value="rr">Round Robin</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="quantum">Quantum (RR)</label>
+                        <input id="quantum" type="number" min="1" value="2" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="runBtn" class="btn-ok">Executar simulação</button>
+                </div>
+                <p class="status" id="status">Adicione processos e execute.</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>Chegada</th>
+                        <th>Burst</th>
+                        <th>Prioridade</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </section>
+
+        <section class="grid">
+            <article class="card">
+                <h1 style="font-size:1rem;margin-bottom:0.65rem;">Métricas</h1>
+                <div class="metrics">
+                    <div class="metric">
+                        <p>Tempo médio de espera</p>
+                        <strong id="avgWait">0.00</strong>
+                    </div>
+                    <div class="metric">
+                        <p>Turnaround médio</p>
+                        <strong id="avgTat">0.00</strong>
+                    </div>
+                    <div class="metric">
+                        <p>Throughput</p>
+                        <strong id="throughput">0.00</strong>
+                    </div>
+                </div>
+            </article>
+            <article class="card">
+                <h1 style="font-size:1rem;margin-bottom:0.65rem;">Timeline (Gantt)</h1>
+                <div class="gantt-wrap">
+                    <div class="gantt" id="gantt"></div>
+                    <div class="timeline" id="timeline"></div>
+                </div>
+            </article>
+        </section>
+    </div>
+
+    <script>
+        const rowsEl = document.getElementById('rows');
+        const statusEl = document.getElementById('status');
+        const ganttEl = document.getElementById('gantt');
+        const timelineEl = document.getElementById('timeline');
+        const avgWaitEl = document.getElementById('avgWait');
+        const avgTatEl = document.getElementById('avgTat');
+        const throughputEl = document.getElementById('throughput');
+
+        const palette = ['#00f5ff', '#fbc404', '#27c93f', '#ff5f56', '#7c3aed', '#00c2a8', '#ff9f1c', '#4ea8de'];
+        let processes = [];
+
+        function renderRows() {
+            if (!processes.length) {
+                rowsEl.innerHTML = '<tr><td colspan="5" style="color:#8b949e;">Sem processos cadastrados.</td></tr>';
+                return;
+            }
+            rowsEl.innerHTML = processes.map((p, i) => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.arrival}</td>
+          <td>${p.burst}</td>
+          <td>${p.priority}</td>
+          <td><button class="btn-danger" style="height:30px;" onclick="removeProcess(${i})">Remover</button></td>
+        </tr>`).join('');
+        }
+
+        function removeProcess(index) {
+            processes.splice(index, 1);
+            renderRows();
+        }
+        window.removeProcess = removeProcess;
+
+        function addProcess(payload) {
+            const id = payload.id.trim();
+            const arrival = Number(payload.arrival);
+            const burst = Number(payload.burst);
+            const priority = Number(payload.priority);
+
+            if (!id || Number.isNaN(arrival) || Number.isNaN(burst) || burst <= 0 || Number.isNaN(priority) || priority < 1) {
+                statusEl.textContent = 'Dados inválidos. Verifique os campos.';
+                return;
+            }
+
+            processes.push({ id, arrival, burst, priority });
+            renderRows();
+            statusEl.textContent = `Processo ${id} adicionado.`;
+        }
+
+        function simulateFCFS(base) {
+            const sorted = [...base].sort((a, b) => a.arrival - b.arrival || a.id.localeCompare(b.id));
+            let time = 0;
+            const segments = [];
+            const out = [];
+
+            sorted.forEach(p => {
+                if (time < p.arrival) {
+                    segments.push({ id: 'Idle', start: time, end: p.arrival });
+                    time = p.arrival;
+                }
+                const start = time;
+                const end = time + p.burst;
+                segments.push({ id: p.id, start, end });
+                out.push({ id: p.id, wait: start - p.arrival, tat: end - p.arrival });
+                time = end;
+            });
+
+            return { segments, out, finish: time };
+        }
+
+        function simulateSJF(base) {
+            const pending = [...base].map(p => ({ ...p }));
+            const out = [];
+            const segments = [];
+            let time = Math.min(...pending.map(p => p.arrival), 0);
+
+            while (pending.length) {
+                const ready = pending.filter(p => p.arrival <= time);
+                if (!ready.length) {
+                    const nextArrival = Math.min(...pending.map(p => p.arrival));
+                    segments.push({ id: 'Idle', start: time, end: nextArrival });
+                    time = nextArrival;
+                    continue;
+                }
+                ready.sort((a, b) => a.burst - b.burst || a.arrival - b.arrival || a.id.localeCompare(b.id));
+                const chosen = ready[0];
+                const idx = pending.findIndex(p => p.id === chosen.id);
+                pending.splice(idx, 1);
+
+                const start = time;
+                const end = time + chosen.burst;
+                segments.push({ id: chosen.id, start, end });
+                out.push({ id: chosen.id, wait: start - chosen.arrival, tat: end - chosen.arrival });
+                time = end;
+            }
+
+            return { segments, out, finish: time };
+        }
+
+        function simulateRR(base, quantum) {
+            const sorted = [...base].sort((a, b) => a.arrival - b.arrival || a.id.localeCompare(b.id));
+            const remaining = Object.fromEntries(sorted.map(p => [p.id, p.burst]));
+            const meta = Object.fromEntries(sorted.map(p => [p.id, { arrival: p.arrival, complete: 0 }]));
+            const queue = [];
+            const segments = [];
+            let i = 0;
+            let time = Math.min(...sorted.map(p => p.arrival), 0);
+
+            while (i < sorted.length || queue.length) {
+                while (i < sorted.length && sorted[i].arrival <= time) {
+                    queue.push(sorted[i]);
+                    i++;
+                }
+
+                if (!queue.length) {
+                    const nextArrival = sorted[i].arrival;
+                    segments.push({ id: 'Idle', start: time, end: nextArrival });
+                    time = nextArrival;
+                    continue;
+                }
+
+                const current = queue.shift();
+                const run = Math.min(remaining[current.id], quantum);
+                const start = time;
+                const end = time + run;
+                segments.push({ id: current.id, start, end });
+                remaining[current.id] -= run;
+                time = end;
+
+                while (i < sorted.length && sorted[i].arrival <= time) {
+                    queue.push(sorted[i]);
+                    i++;
+                }
+
+                if (remaining[current.id] > 0) queue.push(current);
+                else meta[current.id].complete = time;
+            }
+
+            const out = sorted.map(p => {
+                const tat = meta[p.id].complete - p.arrival;
+                return { id: p.id, wait: tat - p.burst, tat };
+            });
+
+            return { segments, out, finish: time };
+        }
+
+        function renderGantt(segments) {
+            if (!segments.length) {
+                ganttEl.innerHTML = '';
+                timelineEl.innerHTML = '';
+                return;
+            }
+
+            const unit = 34;
+            ganttEl.innerHTML = segments.map((s, idx) => {
+                const duration = Math.max(1, s.end - s.start);
+                const bg = s.id === 'Idle' ? 'rgba(255,255,255,0.08)' : palette[idx % palette.length] + '33';
+                return `<div class="block" style="width:${duration * unit}px;background:${bg};">${s.id}<small>${duration}</small></div>`;
+            }).join('');
+
+            const marks = [segments[0].start, ...segments.map(s => s.end)];
+            timelineEl.innerHTML = marks.map(v => `<span>${v}</span>`).join('');
+        }
+
+        function renderMetrics(result) {
+            const waitAvg = result.out.reduce((acc, p) => acc + p.wait, 0) / result.out.length;
+            const tatAvg = result.out.reduce((acc, p) => acc + p.tat, 0) / result.out.length;
+            const throughput = result.out.length / Math.max(result.finish, 1);
+
+            avgWaitEl.textContent = waitAvg.toFixed(2);
+            avgTatEl.textContent = tatAvg.toFixed(2);
+            throughputEl.textContent = throughput.toFixed(2);
+        }
+
+        function runSimulation() {
+            if (!processes.length) {
+                statusEl.textContent = 'Adicione pelo menos um processo.';
+                return;
+            }
+
+            const algorithm = document.getElementById('algorithm').value;
+            const quantum = Number(document.getElementById('quantum').value) || 2;
+            const base = processes.map(p => ({ ...p }));
+            let result;
+
+            if (algorithm === 'fcfs') result = simulateFCFS(base);
+            else if (algorithm === 'sjf') result = simulateSJF(base);
+            else result = simulateRR(base, Math.max(1, quantum));
+
+            renderGantt(result.segments);
+            renderMetrics(result);
+            statusEl.textContent = `Simulação concluída com ${algorithm.toUpperCase()} (${processes.length} processos).`;
+        }
+
+        function seedRandom() {
+            processes = [];
+            for (let i = 1; i <= 6; i++) {
+                processes.push({
+                    id: `P${i}`,
+                    arrival: Math.floor(Math.random() * 8),
+                    burst: Math.floor(Math.random() * 7) + 1,
+                    priority: Math.floor(Math.random() * 5) + 1
+                });
+            }
+            renderRows();
+            statusEl.textContent = 'Processos aleatórios gerados.';
+        }
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            addProcess({
+                id: document.getElementById('pid').value,
+                arrival: document.getElementById('arrival').value,
+                burst: document.getElementById('burst').value,
+                priority: document.getElementById('priority').value
+            });
+        });
+        document.getElementById('randomBtn').addEventListener('click', seedRandom);
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            processes = [];
+            renderRows();
+            renderGantt([]);
+            avgWaitEl.textContent = '0.00';
+            avgTatEl.textContent = '0.00';
+            throughputEl.textContent = '0.00';
+            statusEl.textContent = 'Lista limpa.';
+        });
+        document.getElementById('runBtn').addEventListener('click', runSimulation);
+
+        processes = [
+            { id: 'P1', arrival: 0, burst: 5, priority: 2 },
+            { id: 'P2', arrival: 1, burst: 3, priority: 1 },
+            { id: 'P3', arrival: 2, burst: 6, priority: 4 },
+            { id: 'P4', arrival: 4, burst: 2, priority: 3 }
+        ];
+        renderRows();
+    </script>
+</body>
+
+</html>
