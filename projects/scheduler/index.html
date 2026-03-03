@@ -4,220 +4,240 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scheduler Lab</title>
+    <title>StockFlow | Estoque e Vendas</title>
     <style>
         :root {
             --bg: #0d1117;
             --panel: #161b22;
             --panel-2: #1d2430;
             --border: #30363d;
-            --accent: #00f5ff;
             --text: #e6edf3;
             --muted: #8b949e;
+            --accent: #00f5ff;
             --ok: #27c93f;
-            --warn: #fbc404;
             --danger: #ff5f56;
+            --warn: #fbc404;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         }
 
         body {
-            background: radial-gradient(circle at 10% 0%, rgba(0, 245, 255, 0.12), transparent 45%), var(--bg);
-            color: var(--text);
             min-height: 100vh;
+            background: radial-gradient(circle at 10% 0%, rgba(0, 245, 255, .12), transparent 40%), var(--bg);
+            color: var(--text);
             padding: 1rem;
         }
 
         .app {
-            max-width: 1100px;
+            max-width: 1150px;
             margin: 0 auto;
             display: grid;
-            gap: 0.9rem;
+            gap: .9rem;
         }
 
         .card {
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 0.9rem;
+            padding: .9rem;
         }
 
         .top {
             display: grid;
-            gap: 0.8rem;
-            grid-template-columns: 1.35fr 1fr;
+            grid-template-columns: 1.3fr 1fr;
+            gap: .8rem;
         }
 
         h1 {
-            font-size: 1.2rem;
-            margin-bottom: 0.2rem;
+            font-size: 1.15rem;
+            margin-bottom: .25rem;
         }
 
-        .hint {
+        .muted {
             color: var(--muted);
-            font-size: 0.82rem;
+            font-size: .82rem;
         }
 
-        .controls {
+        .grid-4 {
             display: grid;
-            gap: 0.65rem;
             grid-template-columns: repeat(4, 1fr);
-            margin-top: 0.8rem;
+            gap: .6rem;
+            margin-top: .8rem;
         }
 
         .field {
             display: grid;
-            gap: 0.3rem;
+            gap: .3rem;
         }
 
         .field label {
-            font-size: 0.75rem;
+            font-size: .75rem;
             color: var(--muted);
         }
 
         input,
-        select,
-        button {
+        button,
+        select {
             height: 38px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: var(--panel-2);
             color: var(--text);
-            padding: 0 0.6rem;
+            padding: 0 .65rem;
         }
 
         button {
             cursor: pointer;
             font-weight: 600;
-            background: rgba(0, 245, 255, 0.13);
-            border-color: rgba(0, 245, 255, 0.3);
         }
 
-        button:hover {
-            opacity: 0.95;
+        .btn-primary {
+            background: rgba(0, 245, 255, .16);
+            border-color: rgba(0, 245, 255, .4);
+        }
+
+        .btn-success {
+            background: rgba(39, 201, 63, .16);
+            border-color: rgba(39, 201, 63, .4);
         }
 
         .btn-danger {
-            background: rgba(255, 95, 86, 0.12);
-            border-color: rgba(255, 95, 86, 0.32);
+            background: rgba(255, 95, 86, .16);
+            border-color: rgba(255, 95, 86, .4);
         }
 
-        .btn-ok {
-            background: rgba(39, 201, 63, 0.15);
-            border-color: rgba(39, 201, 63, 0.35);
-        }
-
-        .actions {
+        .row-actions {
+            margin-top: .65rem;
             display: flex;
-            gap: 0.6rem;
-            margin-top: 0.7rem;
+            gap: .5rem;
             flex-wrap: wrap;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.86rem;
-        }
-
-        th,
-        td {
-            padding: 0.55rem;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
-        }
-
-        th {
-            color: var(--muted);
-            font-size: 0.74rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .grid {
-            display: grid;
-            gap: 0.8rem;
-            grid-template-columns: 1fr 1fr;
         }
 
         .metrics {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.6rem;
+            gap: .6rem;
         }
 
         .metric {
             background: var(--panel-2);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 0.75rem;
+            padding: .7rem;
         }
 
         .metric p {
             color: var(--muted);
-            font-size: 0.72rem;
-            margin-bottom: 0.25rem;
+            font-size: .72rem;
+            margin-bottom: .2rem;
         }
 
         .metric strong {
             font-size: 1rem;
         }
 
-        .gantt-wrap {
-            overflow-x: auto;
-            padding-bottom: 0.3rem;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85rem;
         }
 
-        .gantt {
-            display: flex;
-            min-width: max-content;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow: hidden;
+        th,
+        td {
+            padding: .52rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
         }
 
-        .block {
-            border-right: 1px solid var(--border);
-            min-width: 52px;
-            display: grid;
-            place-items: center;
-            padding: 0.4rem;
-            font-size: 0.75rem;
-            background: rgba(0, 245, 255, 0.09);
-        }
-
-        .timeline {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.74rem;
+        th {
             color: var(--muted);
-            margin-top: 0.35rem;
+            text-transform: uppercase;
+            font-size: .72rem;
+            letter-spacing: .06em;
+        }
+
+        .chip {
+            display: inline-flex;
+            padding: .15rem .5rem;
+            border-radius: 99px;
+            border: 1px solid;
+            font-size: .72rem;
+            font-weight: 700;
+        }
+
+        .chip.ok {
+            color: var(--ok);
+            border-color: rgba(39, 201, 63, .4);
+            background: rgba(39, 201, 63, .1);
+        }
+
+        .chip.warn {
+            color: var(--warn);
+            border-color: rgba(251, 188, 4, .45);
+            background: rgba(251, 188, 4, .1);
+        }
+
+        .chip.danger {
+            color: var(--danger);
+            border-color: rgba(255, 95, 86, .45);
+            background: rgba(255, 95, 86, .1);
         }
 
         .status {
-            margin-top: 0.7rem;
-            font-size: 0.85rem;
+            margin-top: .75rem;
             color: var(--warn);
+            font-size: .84rem;
         }
 
-        @media (max-width: 850px) {
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .8rem;
+        }
+
+        .history {
+            max-height: 260px;
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            gap: .5rem;
+            padding: .55rem .7rem;
+            border-bottom: 1px solid var(--border);
+            font-size: .82rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: 0;
+        }
+
+        .amount.in {
+            color: var(--ok);
+        }
+
+        .amount.out {
+            color: var(--danger);
+        }
+
+        @media (max-width: 860px) {
             .top {
                 grid-template-columns: 1fr;
             }
 
-            .controls {
+            .grid-4 {
                 grid-template-columns: 1fr 1fr;
             }
 
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
+            .grid-2,
             .metrics {
                 grid-template-columns: 1fr;
             }
@@ -226,55 +246,62 @@
 </head>
 
 <body>
-    <div class="app">
+    <main class="app">
         <section class="card top">
             <div>
-                <h1>Scheduler Lab</h1>
-                <p class="hint">Simule FCFS, SJF e Round Robin e compare tempo de espera e turnaround.</p>
-                <div class="controls">
+                <h1>StockFlow</h1>
+                <p class="muted">Sistema de gestão de estoque e vendas com saldo, faturamento e histórico.</p>
+
+                <div class="grid-4">
                     <div class="field">
-                        <label for="pid">Processo</label>
-                        <input id="pid" value="P1" />
+                        <label for="name">Produto</label>
+                        <input id="name" placeholder="Ex: Mouse Gamer" />
                     </div>
                     <div class="field">
-                        <label for="arrival">Chegada</label>
-                        <input id="arrival" type="number" min="0" value="0" />
+                        <label for="sku">SKU</label>
+                        <input id="sku" placeholder="MSE-001" />
                     </div>
                     <div class="field">
-                        <label for="burst">Burst</label>
-                        <input id="burst" type="number" min="1" value="4" />
+                        <label for="price">Preço (R$)</label>
+                        <input id="price" type="number" min="0.01" step="0.01" value="99.90" />
                     </div>
                     <div class="field">
-                        <label for="priority">Prioridade</label>
-                        <input id="priority" type="number" min="1" value="3" />
+                        <label for="qty">Estoque inicial</label>
+                        <input id="qty" type="number" min="0" step="1" value="10" />
                     </div>
                 </div>
-                <div class="actions">
-                    <button id="addBtn">Adicionar processo</button>
-                    <button id="randomBtn">Gerar 6 aleatórios</button>
-                    <button id="clearBtn" class="btn-danger">Limpar</button>
+
+                <div class="row-actions">
+                    <button id="addBtn" class="btn-primary">Cadastrar produto</button>
+                    <button id="seedBtn">Criar exemplo</button>
+                    <button id="clearBtn" class="btn-danger">Limpar tudo</button>
                 </div>
             </div>
 
             <div>
-                <div class="controls">
+                <h1 style="font-size:1rem;">Movimentar estoque</h1>
+                <div class="grid-4" style="grid-template-columns: 1.2fr .8fr 1fr;">
                     <div class="field">
-                        <label for="algorithm">Algoritmo</label>
-                        <select id="algorithm">
-                            <option value="fcfs">FCFS</option>
-                            <option value="sjf">SJF (não-preemptivo)</option>
-                            <option value="rr">Round Robin</option>
+                        <label for="target">Produto</label>
+                        <select id="target"></select>
+                    </div>
+                    <div class="field">
+                        <label for="moveQty">Quantidade</label>
+                        <input id="moveQty" type="number" min="1" step="1" value="1" />
+                    </div>
+                    <div class="field">
+                        <label for="moveType">Operação</label>
+                        <select id="moveType">
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                            <option value="venda">Venda</option>
                         </select>
                     </div>
-                    <div class="field">
-                        <label for="quantum">Quantum (RR)</label>
-                        <input id="quantum" type="number" min="1" value="2" />
-                    </div>
                 </div>
-                <div class="actions">
-                    <button id="runBtn" class="btn-ok">Executar simulação</button>
+                <div class="row-actions">
+                    <button id="applyMove" class="btn-success">Aplicar operação</button>
                 </div>
-                <p class="status" id="status">Adicione processos e execute.</p>
+                <p class="status" id="status">Cadastre produtos para iniciar.</p>
             </div>
         </section>
 
@@ -282,10 +309,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>PID</th>
-                        <th>Chegada</th>
-                        <th>Burst</th>
-                        <th>Prioridade</th>
+                        <th>Produto</th>
+                        <th>SKU</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th>Status</th>
                         <th>Ação</th>
                     </tr>
                 </thead>
@@ -293,269 +321,233 @@
             </table>
         </section>
 
-        <section class="grid">
+        <section class="grid-2">
             <article class="card">
-                <h1 style="font-size:1rem;margin-bottom:0.65rem;">Métricas</h1>
+                <h1 style="font-size:1rem;margin-bottom:.65rem;">Resumo</h1>
                 <div class="metrics">
                     <div class="metric">
-                        <p>Tempo médio de espera</p>
-                        <strong id="avgWait">0.00</strong>
+                        <p>Produtos cadastrados</p>
+                        <strong id="mProducts">0</strong>
                     </div>
                     <div class="metric">
-                        <p>Turnaround médio</p>
-                        <strong id="avgTat">0.00</strong>
+                        <p>Itens em estoque</p>
+                        <strong id="mStock">0</strong>
                     </div>
                     <div class="metric">
-                        <p>Throughput</p>
-                        <strong id="throughput">0.00</strong>
+                        <p>Faturamento (vendas)</p>
+                        <strong id="mRevenue">R$ 0,00</strong>
                     </div>
                 </div>
             </article>
+
             <article class="card">
-                <h1 style="font-size:1rem;margin-bottom:0.65rem;">Timeline (Gantt)</h1>
-                <div class="gantt-wrap">
-                    <div class="gantt" id="gantt"></div>
-                    <div class="timeline" id="timeline"></div>
-                </div>
+                <h1 style="font-size:1rem;margin-bottom:.65rem;">Histórico de operações</h1>
+                <div class="history" id="history"></div>
             </article>
         </section>
-    </div>
+    </main>
 
     <script>
+        const STORE_KEY = 'stockflow_state_v1';
+        const state = {
+            products: [],
+            revenue: 0,
+            history: []
+        };
+
         const rowsEl = document.getElementById('rows');
+        const targetEl = document.getElementById('target');
+        const historyEl = document.getElementById('history');
         const statusEl = document.getElementById('status');
-        const ganttEl = document.getElementById('gantt');
-        const timelineEl = document.getElementById('timeline');
-        const avgWaitEl = document.getElementById('avgWait');
-        const avgTatEl = document.getElementById('avgTat');
-        const throughputEl = document.getElementById('throughput');
 
-        const palette = ['#00f5ff', '#fbc404', '#27c93f', '#ff5f56', '#7c3aed', '#00c2a8', '#ff9f1c', '#4ea8de'];
-        let processes = [];
+        const mProducts = document.getElementById('mProducts');
+        const mStock = document.getElementById('mStock');
+        const mRevenue = document.getElementById('mRevenue');
 
-        function renderRows() {
-            if (!processes.length) {
-                rowsEl.innerHTML = '<tr><td colspan="5" style="color:#8b949e;">Sem processos cadastrados.</td></tr>';
-                return;
-            }
-            rowsEl.innerHTML = processes.map((p, i) => `
-        <tr>
-          <td>${p.id}</td>
-          <td>${p.arrival}</td>
-          <td>${p.burst}</td>
-          <td>${p.priority}</td>
-          <td><button class="btn-danger" style="height:30px;" onclick="removeProcess(${i})">Remover</button></td>
-        </tr>`).join('');
+        function money(v) {
+            return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
-        function removeProcess(index) {
-            processes.splice(index, 1);
-            renderRows();
-        }
-        window.removeProcess = removeProcess;
-
-        function addProcess(payload) {
-            const id = payload.id.trim();
-            const arrival = Number(payload.arrival);
-            const burst = Number(payload.burst);
-            const priority = Number(payload.priority);
-
-            if (!id || Number.isNaN(arrival) || Number.isNaN(burst) || burst <= 0 || Number.isNaN(priority) || priority < 1) {
-                statusEl.textContent = 'Dados inválidos. Verifique os campos.';
-                return;
-            }
-
-            processes.push({ id, arrival, burst, priority });
-            renderRows();
-            statusEl.textContent = `Processo ${id} adicionado.`;
+        function save() {
+            localStorage.setItem(STORE_KEY, JSON.stringify(state));
         }
 
-        function simulateFCFS(base) {
-            const sorted = [...base].sort((a, b) => a.arrival - b.arrival || a.id.localeCompare(b.id));
-            let time = 0;
-            const segments = [];
-            const out = [];
-
-            sorted.forEach(p => {
-                if (time < p.arrival) {
-                    segments.push({ id: 'Idle', start: time, end: p.arrival });
-                    time = p.arrival;
-                }
-                const start = time;
-                const end = time + p.burst;
-                segments.push({ id: p.id, start, end });
-                out.push({ id: p.id, wait: start - p.arrival, tat: end - p.arrival });
-                time = end;
-            });
-
-            return { segments, out, finish: time };
+        function load() {
+            const raw = localStorage.getItem(STORE_KEY);
+            if (!raw) return;
+            try {
+                const data = JSON.parse(raw);
+                state.products = data.products || [];
+                state.revenue = Number(data.revenue || 0);
+                state.history = data.history || [];
+            } catch (_) {}
         }
 
-        function simulateSJF(base) {
-            const pending = [...base].map(p => ({ ...p }));
-            const out = [];
-            const segments = [];
-            let time = Math.min(...pending.map(p => p.arrival), 0);
+        function productStatus(qty) {
+            if (qty <= 0) return '<span class="chip danger">Sem estoque</span>';
+            if (qty <= 3) return '<span class="chip warn">Baixo</span>';
+            return '<span class="chip ok">Normal</span>';
+        }
 
-            while (pending.length) {
-                const ready = pending.filter(p => p.arrival <= time);
-                if (!ready.length) {
-                    const nextArrival = Math.min(...pending.map(p => p.arrival));
-                    segments.push({ id: 'Idle', start: time, end: nextArrival });
-                    time = nextArrival;
-                    continue;
-                }
-                ready.sort((a, b) => a.burst - b.burst || a.arrival - b.arrival || a.id.localeCompare(b.id));
-                const chosen = ready[0];
-                const idx = pending.findIndex(p => p.id === chosen.id);
-                pending.splice(idx, 1);
-
-                const start = time;
-                const end = time + chosen.burst;
-                segments.push({ id: chosen.id, start, end });
-                out.push({ id: chosen.id, wait: start - chosen.arrival, tat: end - chosen.arrival });
-                time = end;
+        function renderProducts() {
+            if (!state.products.length) {
+                rowsEl.innerHTML = '<tr><td colspan="6" style="color:#8b949e;">Nenhum produto cadastrado.</td></tr>';
+            } else {
+                rowsEl.innerHTML = state.products.map((p, i) => `
+                    <tr>
+                        <td>${p.name}</td>
+                        <td>${p.sku}</td>
+                        <td>${money(p.price)}</td>
+                        <td>${p.qty}</td>
+                        <td>${productStatus(p.qty)}</td>
+                        <td><button class="btn-danger" style="height:30px;" onclick="removeProduct(${i})">Excluir</button></td>
+                    </tr>
+                `).join('');
             }
 
-            return { segments, out, finish: time };
+            targetEl.innerHTML = state.products.map((p, i) => `<option value="${i}">${p.name} (${p.sku})</option>`).join('');
+            renderSummary();
+            renderHistory();
+            save();
         }
 
-        function simulateRR(base, quantum) {
-            const sorted = [...base].sort((a, b) => a.arrival - b.arrival || a.id.localeCompare(b.id));
-            const remaining = Object.fromEntries(sorted.map(p => [p.id, p.burst]));
-            const meta = Object.fromEntries(sorted.map(p => [p.id, { arrival: p.arrival, complete: 0 }]));
-            const queue = [];
-            const segments = [];
-            let i = 0;
-            let time = Math.min(...sorted.map(p => p.arrival), 0);
-
-            while (i < sorted.length || queue.length) {
-                while (i < sorted.length && sorted[i].arrival <= time) {
-                    queue.push(sorted[i]);
-                    i++;
-                }
-
-                if (!queue.length) {
-                    const nextArrival = sorted[i].arrival;
-                    segments.push({ id: 'Idle', start: time, end: nextArrival });
-                    time = nextArrival;
-                    continue;
-                }
-
-                const current = queue.shift();
-                const run = Math.min(remaining[current.id], quantum);
-                const start = time;
-                const end = time + run;
-                segments.push({ id: current.id, start, end });
-                remaining[current.id] -= run;
-                time = end;
-
-                while (i < sorted.length && sorted[i].arrival <= time) {
-                    queue.push(sorted[i]);
-                    i++;
-                }
-
-                if (remaining[current.id] > 0) queue.push(current);
-                else meta[current.id].complete = time;
-            }
-
-            const out = sorted.map(p => {
-                const tat = meta[p.id].complete - p.arrival;
-                return { id: p.id, wait: tat - p.burst, tat };
-            });
-
-            return { segments, out, finish: time };
+        function renderSummary() {
+            const totalStock = state.products.reduce((sum, p) => sum + p.qty, 0);
+            mProducts.textContent = state.products.length;
+            mStock.textContent = totalStock;
+            mRevenue.textContent = money(state.revenue);
         }
 
-        function renderGantt(segments) {
-            if (!segments.length) {
-                ganttEl.innerHTML = '';
-                timelineEl.innerHTML = '';
+        function renderHistory() {
+            if (!state.history.length) {
+                historyEl.innerHTML = '<div class="history-item" style="color:#8b949e;">Sem operações ainda.</div>';
                 return;
             }
 
-            const unit = 34;
-            ganttEl.innerHTML = segments.map((s, idx) => {
-                const duration = Math.max(1, s.end - s.start);
-                const bg = s.id === 'Idle' ? 'rgba(255,255,255,0.08)' : palette[idx % palette.length] + '33';
-                return `<div class="block" style="width:${duration * unit}px;background:${bg};">${s.id}<small>${duration}</small></div>`;
-            }).join('');
-
-            const marks = [segments[0].start, ...segments.map(s => s.end)];
-            timelineEl.innerHTML = marks.map(v => `<span>${v}</span>`).join('');
+            historyEl.innerHTML = [...state.history].reverse().map(h => `
+                <div class="history-item">
+                    <div>
+                        <strong>${h.product}</strong>
+                        <div style="color:#8b949e;font-size:.75rem;">${h.type} · ${new Date(h.date).toLocaleString('pt-BR')}</div>
+                    </div>
+                    <div class="amount ${h.effect}">${h.text}</div>
+                </div>
+            `).join('');
         }
 
-        function renderMetrics(result) {
-            const waitAvg = result.out.reduce((acc, p) => acc + p.wait, 0) / result.out.length;
-            const tatAvg = result.out.reduce((acc, p) => acc + p.tat, 0) / result.out.length;
-            const throughput = result.out.length / Math.max(result.finish, 1);
-
-            avgWaitEl.textContent = waitAvg.toFixed(2);
-            avgTatEl.textContent = tatAvg.toFixed(2);
-            throughputEl.textContent = throughput.toFixed(2);
+        function addHistory(product, type, text, effect) {
+            state.history.push({ product, type, text, effect, date: new Date().toISOString() });
+            if (state.history.length > 120) state.history.shift();
         }
 
-        function runSimulation() {
-            if (!processes.length) {
-                statusEl.textContent = 'Adicione pelo menos um processo.';
+        function addProduct() {
+            const name = document.getElementById('name').value.trim();
+            const sku = document.getElementById('sku').value.trim().toUpperCase();
+            const price = Number(document.getElementById('price').value);
+            const qty = Number(document.getElementById('qty').value);
+
+            if (!name || !sku || !(price > 0) || qty < 0) {
+                statusEl.textContent = 'Preencha os campos corretamente.';
                 return;
             }
 
-            const algorithm = document.getElementById('algorithm').value;
-            const quantum = Number(document.getElementById('quantum').value) || 2;
-            const base = processes.map(p => ({ ...p }));
-            let result;
-
-            if (algorithm === 'fcfs') result = simulateFCFS(base);
-            else if (algorithm === 'sjf') result = simulateSJF(base);
-            else result = simulateRR(base, Math.max(1, quantum));
-
-            renderGantt(result.segments);
-            renderMetrics(result);
-            statusEl.textContent = `Simulação concluída com ${algorithm.toUpperCase()} (${processes.length} processos).`;
-        }
-
-        function seedRandom() {
-            processes = [];
-            for (let i = 1; i <= 6; i++) {
-                processes.push({
-                    id: `P${i}`,
-                    arrival: Math.floor(Math.random() * 8),
-                    burst: Math.floor(Math.random() * 7) + 1,
-                    priority: Math.floor(Math.random() * 5) + 1
-                });
+            if (state.products.some(p => p.sku === sku)) {
+                statusEl.textContent = 'SKU já cadastrado.';
+                return;
             }
-            renderRows();
-            statusEl.textContent = 'Processos aleatórios gerados.';
+
+            state.products.push({ name, sku, price, qty });
+            addHistory(name, 'cadastro', `+${qty} un`, 'in');
+            statusEl.textContent = `Produto ${name} cadastrado.`;
+            renderProducts();
         }
 
-        document.getElementById('addBtn').addEventListener('click', () => {
-            addProcess({
-                id: document.getElementById('pid').value,
-                arrival: document.getElementById('arrival').value,
-                burst: document.getElementById('burst').value,
-                priority: document.getElementById('priority').value
-            });
-        });
-        document.getElementById('randomBtn').addEventListener('click', seedRandom);
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            processes = [];
-            renderRows();
-            renderGantt([]);
-            avgWaitEl.textContent = '0.00';
-            avgTatEl.textContent = '0.00';
-            throughputEl.textContent = '0.00';
-            statusEl.textContent = 'Lista limpa.';
-        });
-        document.getElementById('runBtn').addEventListener('click', runSimulation);
+        function applyMove() {
+            const idx = Number(targetEl.value);
+            const qty = Number(document.getElementById('moveQty').value);
+            const type = document.getElementById('moveType').value;
 
-        processes = [
-            { id: 'P1', arrival: 0, burst: 5, priority: 2 },
-            { id: 'P2', arrival: 1, burst: 3, priority: 1 },
-            { id: 'P3', arrival: 2, burst: 6, priority: 4 },
-            { id: 'P4', arrival: 4, burst: 2, priority: 3 }
-        ];
-        renderRows();
+            if (Number.isNaN(idx) || !state.products[idx]) {
+                statusEl.textContent = 'Selecione um produto.';
+                return;
+            }
+            if (!(qty > 0)) {
+                statusEl.textContent = 'Quantidade deve ser maior que 0.';
+                return;
+            }
+
+            const p = state.products[idx];
+
+            if (type === 'entrada') {
+                p.qty += qty;
+                addHistory(p.name, 'entrada', `+${qty} un`, 'in');
+                statusEl.textContent = `Entrada aplicada em ${p.name}.`;
+            }
+
+            if (type === 'saida') {
+                if (qty > p.qty) {
+                    statusEl.textContent = 'Saída maior que estoque disponível.';
+                    return;
+                }
+                p.qty -= qty;
+                addHistory(p.name, 'saida', `-${qty} un`, 'out');
+                statusEl.textContent = `Saída aplicada em ${p.name}.`;
+            }
+
+            if (type === 'venda') {
+                if (qty > p.qty) {
+                    statusEl.textContent = 'Venda maior que estoque disponível.';
+                    return;
+                }
+                p.qty -= qty;
+                const value = qty * p.price;
+                state.revenue += value;
+                addHistory(p.name, 'venda', `-${qty} un · ${money(value)}`, 'out');
+                statusEl.textContent = `Venda registrada: ${money(value)}.`;
+            }
+
+            renderProducts();
+        }
+
+        function removeProduct(index) {
+            const removed = state.products.splice(index, 1)[0];
+            if (removed) {
+                addHistory(removed.name, 'exclusao', 'produto removido', 'out');
+                statusEl.textContent = `${removed.name} removido.`;
+                renderProducts();
+            }
+        }
+        window.removeProduct = removeProduct;
+
+        function clearAll() {
+            state.products = [];
+            state.revenue = 0;
+            state.history = [];
+            statusEl.textContent = 'Base limpa.';
+            renderProducts();
+        }
+
+        function seedData() {
+            state.products = [
+                { name: 'Teclado Mecânico', sku: 'TEC-001', price: 289.90, qty: 8 },
+                { name: 'Mouse Gamer', sku: 'MOU-002', price: 149.90, qty: 12 },
+                { name: 'Headset Pro', sku: 'HED-003', price: 329.90, qty: 4 }
+            ];
+            state.revenue = 0;
+            state.history = [];
+            addHistory('Sistema', 'seed', 'dados de exemplo criados', 'in');
+            statusEl.textContent = 'Exemplo carregado.';
+            renderProducts();
+        }
+
+        document.getElementById('addBtn').addEventListener('click', addProduct);
+        document.getElementById('applyMove').addEventListener('click', applyMove);
+        document.getElementById('clearBtn').addEventListener('click', clearAll);
+        document.getElementById('seedBtn').addEventListener('click', seedData);
+
+        load();
+        if (!state.products.length && !state.history.length) seedData();
+        else renderProducts();
     </script>
 </body>
 
