@@ -94,10 +94,26 @@ setTimeout(type, 1800);
 
 /* ─── Stats Counter ─── */
 function animateStat(el) {
-  const target = parseInt(el.dataset.target);
-  animate(p => { el.textContent = Math.round(p * target); }, { duration: 1.5, easing: [0.22, 1, 0.36, 1] });
+  const target = parseInt(el.dataset.target, 10) || 0;
+  const duration = 1400;
+  const start = performance.now();
+
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(target * eased);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
 }
-inView('.hero-stats', () => document.querySelectorAll('.stat-number').forEach(animateStat), { amount: 0.5 });
+inView('.hero-stats', () => {
+  document.querySelectorAll('.stat-number').forEach(el => {
+    if (el.dataset.animated === 'true') return;
+    el.dataset.animated = 'true';
+    animateStat(el);
+  });
+}, { amount: 0.5 });
 
 /* ─── Section Reveals ─── */
 document.querySelectorAll('.reveal').forEach((el, i) => {
@@ -224,10 +240,10 @@ dotBtns.forEach(dot => {
 });
 
 // Auto-play
-let timer = setInterval(() => goTo((current + 1) % slides.length, 1), 5000);
+let timer = setInterval(() => goTo((current + 1) % slides.length, 1), 9000);
 const wrap = document.querySelector('.carousel-wrapper');
 wrap.addEventListener('mouseenter', () => clearInterval(timer));
-wrap.addEventListener('mouseleave', () => { timer = setInterval(() => goTo((current + 1) % slides.length, 1), 5000); });
+wrap.addEventListener('mouseleave', () => { timer = setInterval(() => goTo((current + 1) % slides.length, 1), 9000); });
 
 // Touch swipe
 let tx = 0;
