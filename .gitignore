@@ -7,3 +7,8 @@ projects/bancario/.mvn-bin/
 
 # Maven build output
 projects/caixa-mercado-java/target/
+
+# Imagens originais pesadas (somente a versão otimizada .webp vai pro git)
+assets/profile.png
+assets/profile.jpg
+assets/@.png
