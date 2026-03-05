@@ -146,14 +146,51 @@ document.querySelectorAll('.btn').forEach(btn => {
 
 /* ─── Form submit ─── */
 const form = document.getElementById('contactForm');
-form.addEventListener('submit', e => {
+form.addEventListener('submit', async e => {
   e.preventDefault();
   const btn = document.getElementById('form-submit');
   const orig = btn.innerHTML;
-  btn.innerHTML = '<span>Mensagem enviada! ✅</span>';
-  btn.style.background = '#27c93f';
-  animate(btn, { scale: [1, 1.04, 1] }, { duration: 0.4 });
-  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; form.reset(); }, 2500);
+
+  const serviceId = form.dataset.emailjsService;
+  const templateId = form.dataset.emailjsTemplate;
+  const publicKey = form.dataset.emailjsPublicKey;
+
+  if (!window.emailjs || !serviceId || !templateId || !publicKey
+    || serviceId.includes('SEU_') || templateId.includes('SEU_') || publicKey.includes('SUA_')) {
+    btn.innerHTML = '<span>Configurar EmailJS ⚠️</span>';
+    btn.style.background = '#fbc404';
+    animate(btn, { scale: [1, 1.04, 1] }, { duration: 0.4 });
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2600);
+    return;
+  }
+
+  const name = document.getElementById('form-name').value.trim();
+  const email = document.getElementById('form-email').value.trim();
+  const message = document.getElementById('form-message').value.trim();
+
+  btn.innerHTML = '<span>Enviando...</span>';
+  btn.style.background = '#0db7ed';
+
+  try {
+    window.emailjs.init({ publicKey });
+    await window.emailjs.send(serviceId, templateId, {
+      from_name: name,
+      from_email: email,
+      message,
+      to_name: 'Matheus'
+    });
+
+    btn.innerHTML = '<span>Mensagem enviada! ✅</span>';
+    btn.style.background = '#27c93f';
+    animate(btn, { scale: [1, 1.04, 1] }, { duration: 0.4 });
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; form.reset(); }, 2500);
+  } catch (err) {
+    btn.innerHTML = '<span>Erro no envio ❌</span>';
+    btn.style.background = '#ff5f56';
+    animate(btn, { scale: [1, 1.04, 1] }, { duration: 0.4 });
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2800);
+    console.error('EmailJS error:', err);
+  }
 });
 
 /* ─── Active nav ─── */
